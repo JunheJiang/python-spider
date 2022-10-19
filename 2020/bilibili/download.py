@@ -3,7 +3,6 @@
 # Author: Jack Cui
 # Date: 2020.07.22
 import requests
-import json
 import re
 import json
 import math
@@ -15,6 +14,7 @@ from bs4 import BeautifulSoup
 
 import os
 from win32com.client import Dispatch
+
 
 def addTasktoXunlei(down_url):
     flag = False
@@ -28,6 +28,7 @@ def addTasktoXunlei(down_url):
         print(" AddTask is fail!")
     return flag
 
+
 def get_download_url(arcurl):
     # 微信搜索 JackCui-AI 关注公众号，后台回复「B 站」获取视频解析地址
     jiexi_url = 'xxx'
@@ -37,17 +38,20 @@ def get_download_url(arcurl):
     jiexi_dn_url = jiexi_bf.iframe.get('src')
     dn_req = requests.get(jiexi_dn_url)
     dn_bf = BeautifulSoup(dn_req.text)
-    video_script = dn_bf.find('script',src = None)
+    video_script = dn_bf.find('script', src=None)
     DPlayer = str(video_script.string)
-    download_url = re.findall('\'(http[s]?:(?:[a-zA-Z]|[0-9]|[$-_@.&~+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)\'', DPlayer)[0]
+    download_url = \
+        re.findall('\'(http[s]?:(?:[a-zA-Z]|[0-9]|[$-_@.&~+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)\'', DPlayer)[0]
     download_url = download_url.replace('\\', '')
     return download_url
+
 
 space_url = 'https://space.bilibili.com/280793434'
 search_url = 'https://api.bilibili.com/x/space/arc/search'
 mid = space_url.split('/')[-1]
 sess = requests.Session()
-search_headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
+search_headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
     'Accept-Language': 'zh-CN,zh;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept': 'application/json, text/plain, */*'}
@@ -64,9 +68,9 @@ info = json.loads(req.text)
 video_count = info['data']['page']['count']
 
 ps = 10
-page = math.ceil(video_count/ps)
+page = math.ceil(video_count / ps)
 videos_list = []
-for pn in range(1, page+1):
+for pn in range(1, page + 1):
     search_params = {'mid': mid,
                      'ps': ps,
                      'tid': 0,
@@ -99,11 +103,12 @@ for video in videos_list[:10]:
     danmu_ass = filename + '.ass'
     oid = download_url.split('/')[6]
     danmu_url = 'https://api.bilibili.com/x/v1/dm/list.so?oid={}'.format(oid)
-    danmu_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
-                    'Accept': '*/*',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Accept-Language': 'zh-CN,zh;q=0.9'}
-    with closing(sess.get(danmu_url, headers=danmu_header, stream=True, verify=False)) as response:  
+    danmu_header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9'}
+    with closing(sess.get(danmu_url, headers=danmu_header, stream=True, verify=False)) as response:
         if response.status_code == 200:
             with open(danmu_name, 'wb') as file:
                 for data in response.iter_content():
